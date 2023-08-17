@@ -33,7 +33,7 @@ void setup() {
     }
 
 //----------------------------------------
-  Buton Setup
+  // Buton Setup
   btnUp.begin(pinBtnUp);
   btnMenu.begin(pinBtnMenu);
   btnDn.begin(pinBtnDn);
