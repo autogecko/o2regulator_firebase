@@ -52,6 +52,7 @@ void set_mode(Mode_Type _CUR_){
 //    CUR_MODE = RUNNING_MODE; //debug
   }
 
+
 }
 
 // 25 pin
@@ -76,7 +77,8 @@ void hndlr_btnMenu(Button2 &btn) {
       break;
 
     case long_click:{
-      if (CUR_MODE == WARN_CHANGE_MODE) set_mode(WARN_CONFIRM_MODE);
+      if (CUR_MODE == WARN_CHANGE_MODE) set_mode(RUNNING_MODE);
+      break;
     }
   }
 
@@ -176,28 +178,47 @@ void update_display() {
   else if (CUR_MODE == SETTING_MODE) {
     Serial.printf("** CUR_MODE: %s \n", MODE_ITEM[CUR_MODE]);
     for (int i = 0; i < nSubMenu; i++) {
-      if (i == nSelectedSubMenu)
-        Serial.printf("* %s\n", subMenuItem[i]);
-      else
-        Serial.printf("%s\n", subMenuItem[i]);
+      if (i == nSelectedSubMenu){
+        tft.setTextSize(1.8);
+        tft.setTextColor(TFT_WHITE, TFT_DARKGREEN);
+        tft.drawString(subMenuItem[i], 30, 60 * (i + 1),4);
+      } else {
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextSize(1.5);
+        tft.drawString(subMenuItem[i], 30, 60 * (i + 1),4);
+      }
    }
   }
 
+
   else if (CUR_MODE == WARN_CHANGE_MODE) {
-   Serial.printf("WARN LEVEL: %d L/min\n", warnLevel);
-   Serial.printf("HOLD menu to Set /n Click to Return\n");
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextSize(1.8);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.drawString("Warn Level: " + String(warnLevel), 30, 50, 4);
+        tft.drawString("Hole [M] to Set", 30, 80, 4);
   }
 
-  else if (CUR_MODE == WARN_CONFIRM_MODE) {
-   Serial.printf(
-       "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
-       warnLevel);
-   delay(3000);
-   set_mode(RUNNING_MODE);
-  }
+  // else if (CUR_MODE == WARN_CONFIRM_MODE) {
+  //  Serial.printf(
+  //      "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
+  //      warnLevel);
+
+  //       tft.fillScreen(TFT_BLACK);
+  //       tft.setTextSize(1.8);
+  //       tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  //       tft.drawString("SET WARN LVL: "+String(warnLevel), 30, 50, 4);
+  //       delay(3000);
+
+  //       set_mode(RUNNING_MODE);
+  // }
 
   else if (CUR_MODE == RUNNING_MODE) {
-   Serial.printf(" %d L/min [%d]\n", pressureValue, warnLevel);
+
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextSize(1.8);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel)+"]", 30, 50, 4);
   }
 
   else if (CUR_MODE == INFO_MODE) {

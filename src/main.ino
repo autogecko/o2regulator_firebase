@@ -135,10 +135,10 @@ void loop() {
     btnDn.loop();
     btnMenu.loop();
 
-    if(Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)){
-        sendDataPrevMillis = millis();
+    /* if(Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)){ */
+    /*     sendDataPrevMillis = millis(); */
 
-        publish_data(devicePath, random(0,10)/10+random(0,12));
+    /*     publish_data(devicePath, random(0,10)/10+random(0,12)); */
 
 }
 
