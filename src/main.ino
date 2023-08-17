@@ -2,6 +2,47 @@
 
 #include "o2Reg.h"
 
+#include <Arduino.h>
+#if defined(ESP32)
+#include <WiFi.h>
+#include <FirebaseESP32.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#include <FirebaseESP8266.h>
+#elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+#include <WiFi.h>
+#include <FirebaseESP8266.h>
+#endif
+
+#include <addons/TokenHelper.h>
+
+// Provide the RTDB payload printing info and other helper functions.
+#include <addons/RTDBHelper.h>
+
+/* 1. Define the WiFi credentials */
+#define WIFI_SSID "minux2G"
+#define WIFI_PASSWORD "0123456789han"
+
+// For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
+
+#define API_KEY "AIzaSyDb5cR4OhypDR1IxbEtc9e2q_IAU3H0Sz0"
+
+// Insert RTDB URLefine the RTDB URL */
+#define DATABASE_URL "https://ss-pjt001-default-rtdb.firebaseio.com/"
+/* 2. Define the API Key */
+
+/* 4. Define the user Email and password that alreadey registerd or added in your project */
+
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+unsigned long sendDataPrevMillis;
+unsigned long count ;
+bool signupOK ;
+char * devicePath = "device/oxy01/o2_val";
+
+#define USER_EMAIL "USER_EMAIL"
+#define USER_PASSWORD "USER_PASSWORD"
 #define pinBtnUp 25
 #define pinBtnMenu 33
 #define pinBtnDn 32
@@ -10,8 +51,10 @@
 
 
 
+
 bool WiFistatus = false;
 
+void publish_data(char *devicePath, float valPressure);
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -33,6 +76,26 @@ void setup() {
     }
 
 //----------------------------------------
+  
+  config.api_key = API_KEY;
+
+  // Assign the RTDB URL (required)
+  config.database_url = DATABASE_URL;
+
+  // Assign the user sign in credentials
+  if (Firebase.signUp(&config, &auth, "", "")){
+    Serial.println("ok");
+    signupOK = true;        // this is the anonymous sign in
+  }
+  else {
+    Serial.printf("%s\n", config.signer.signupError.message.c_str());
+  }
+
+  // Assign the callback function for the long running token generation task
+  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
+
+  Firebase.begin(&config, &auth);
+  Firebase.reconnectWiFi(true);
   // Buton Setup
   btnUp.begin(pinBtnUp);
   btnMenu.begin(pinBtnMenu);
@@ -72,16 +135,22 @@ void loop() {
     btnDn.loop();
     btnMenu.loop();
 
-//  optional - example of publishing to MQTT a sensor reading once a 1 minute
-  /* long now = millis(); */
-  /* if (now - wmm.lastMsg > 1000) { */
-  /*   wmm.lastMsg = now; */
-  /*   int temperature = analogRead(pinSenor); // read sensor here */
-  /*   Serial.print("Temperature: "); */
-  /*   Serial.println(temperature); */
-  /*   char topic[100]; */
-  /*   snprintf(topic, sizeof(topic), "%s%s%s", "sensor/", wmm.deviceId, "/temperature"); */
-  /*   wmm.client->publish(topic, String(temperature).c_str(), true); */
-  /* } */
+    if(Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)){
+        sendDataPrevMillis = millis();
 
+        publish_data(devicePath, random(0,10)/10+random(0,12));
+
+}
+
+void publish_data(char *devicePath, float valPressure){
+
+    if (Firebase.RTDB.setInt(&fbdo, devicePath, valPressure)){
+        Serial.println("PASSED");
+        Serial.println("PATH : " + fbdo.dataPath());
+        Serial.println("TYPE : " + fbdo.dataType());
+    }
+    else {
+        Serial.println("FAILED");
+        Serial.println("REASON : " + fbdo.errorReason());
+    }
 }

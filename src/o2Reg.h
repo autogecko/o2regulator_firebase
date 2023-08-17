@@ -9,6 +9,8 @@
 #include <SPI.h>
 //#include "secrets.h"
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+
+// --------------------
 #define TFT_BLACK       0x0000
 #define TFT_NAVY        0x000F
 #define TFT_DARKGREEN   0x03E0
@@ -51,7 +53,6 @@ static Mode_Type CUR_MODE = MENU_MODE;
 
 
 
-
 extern int warnLevel ;
 extern int nSelectedMainMenu ;
 extern int nSelectedSubMenu ;
@@ -83,3 +84,4 @@ void update_display();
 
 void update_display_temp();
 void debug_out();
+void test_fbase();
