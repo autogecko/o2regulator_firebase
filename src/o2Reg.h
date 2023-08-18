@@ -43,6 +43,8 @@ enum Mode_Type {
   WARN_CONFIRM_MODE
 };
 
+extern void (*functionPointers[])(void) ;
+
 static Mode_Type CUR_MODE = MENU_MODE;
 
 #define nMainMenu 3
@@ -59,6 +61,7 @@ extern int nSelectedSubMenu ;
 
 extern char MODE_ITEM[10][20];;
 //char MODE_SUB_SETTING_ITEM[3][20] =
+
 
 extern char mainMenuItem[nMainMenu][12];
 extern char subMenuItem[nSubMenu][12] ;
@@ -81,7 +84,19 @@ void hndlr_btnUp(Button2 &btn) ;
 void hndlr_btnMenu(Button2 &btn);
 void hndlr_btnDn(Button2 &btn) ;
 void update_display();
-
 void update_display_temp();
+
+void update_lcd(enum Mode_Type );
 void debug_out();
 void test_fbase();
+
+ void DISPLAY_MENU_MODE ();
+ void DISPLAY_BOOT_MODE();
+ void DISPLAY_RUNNING_MODE();
+ void DISPLAY_WARN_CHANGE_MODE();
+ void DISPLAY_INFO_MODE();
+ void DISPLAY_SETTING_MODE();
+ void DISPLAY_NET_SETTING_MODE();
+ void DISPLAY_NET_CHECK_MODE();
+ void DISPLAY_REBOOT_MODE();
+// void DISPLAY_WARN_CONFIRM_MODE();

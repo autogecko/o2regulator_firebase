@@ -125,7 +125,7 @@ tft.drawString("Welcome iO2",30, 120,4);
   Serial.println("-- Network Setup");
   delay(500);
   //Network Check
-  Serial.println("-- Network Check ");
+Serial.println("-- Network Check ");
 //   CUR_MODE = RUNNING_MODE;
 //  ESP_LOGW(TASK1_TAG,"hello loogoogogo from setup");
 }
@@ -134,7 +134,7 @@ void loop() {
     btnUp.loop();
     btnDn.loop();
     btnMenu.loop();
-
+    update_lcd(CUR_MODE);
     /* if(Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)){ */
     /*     sendDataPrevMillis = millis(); */
 
