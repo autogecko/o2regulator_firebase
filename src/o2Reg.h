@@ -39,13 +39,13 @@ enum Mode_Type {
   SETTING_MODE,
   NET_SETTING_MODE,
   NET_CHECK_MODE,
-  REBOOT_MODE,
-  WARN_CONFIRM_MODE
+  REBOOT_MODE = 8,
+//  WARN_CONFIRM_MODE
 };
 
 extern void (*functionPointers[])(void) ;
 
-static Mode_Type CUR_MODE = MENU_MODE;
+extern Mode_Type CUR_MODE ;
 
 #define nMainMenu 3
 #define nSubMenu 3

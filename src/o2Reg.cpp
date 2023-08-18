@@ -19,6 +19,7 @@ int nSelectedSubMenu = 0;
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
 
+Mode_Type CUR_MODE = MENU_MODE;
 
 #define TFT_BLACK       0x0000
 #define TFT_NAVY        0x000F
@@ -58,6 +59,7 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 void set_mode(Mode_Type _CUR_){
   CUR_MODE = _CUR_;
   Serial.printf("### CURRENT SET MODE from setmode(%s) \n", MODE_ITEM[CUR_MODE]);
+  tft.fillScreen(TFT_BLACK);
   if(CUR_MODE == REBOOT_MODE){
     for(int i=0; i<3; i++){
       delay(500);
@@ -87,7 +89,7 @@ void hndlr_btnMenu(Button2 &btn) {
       else if (CUR_MODE == WARN_CHANGE_MODE ) set_mode(MENU_MODE);
       else if (CUR_MODE == INFO_MODE ) set_mode(MENU_MODE);
       else if (CUR_MODE == NET_SETTING_MODE) set_mode(REBOOT_MODE);
-      else if (CUR_MODE == WARN_CONFIRM_MODE) set_mode(RUNNING_MODE);
+//      else if (CUR_MODE == WARN_CONFIRM_MODE) set_mode(RUNNING_MODE);
       break;
 
     case long_click:{
@@ -212,19 +214,19 @@ void update_display() {
         tft.drawString("Hole [M] to Set", 30, 80, 4);
   }
 
-  else if (CUR_MODE == WARN_CONFIRM_MODE) {
-   Serial.printf(
-       "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
-       warnLevel);
+  // else if (CUR_MODE == WARN_CONFIRM_MODE) {
+  //  Serial.printf(
+  //      "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
+  //      warnLevel);
 
-        tft.fillScreen(TFT_BLACK);
-        tft.setTextSize(1.8);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("SET WARN LVL: "+String(warnLevel), 30, 50, 4);
-        delay(3000);
+  //       tft.fillScreen(TFT_BLACK);
+  //       tft.setTextSize(1.8);
+  //       tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  //       tft.drawString("SET WARN LVL: "+String(warnLevel), 30, 50, 4);
+  //       delay(3000);
 
-        set_mode(RUNNING_MODE);
-  }
+  //       set_mode(RUNNING_MODE);
+  // }
 
   else if (CUR_MODE == RUNNING_MODE) {
 
@@ -280,13 +282,13 @@ void debug_out(){
    Serial.printf("HOLD menu to Set /n Click to Return\n");
   }
 
-  else if (CUR_MODE == WARN_CONFIRM_MODE) {
-   Serial.printf(
-       "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
-       warnLevel);
-   delay(3000);
-   set_mode(RUNNING_MODE);
-  }
+  // else if (CUR_MODE == WARN_CONFIRM_MODE) {
+  //  Serial.printf(
+  //      "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
+  //      warnLevel);
+  //  delay(3000);
+  //  set_mode(RUNNING_MODE);
+  // }
 
   else if (CUR_MODE == RUNNING_MODE) {
    Serial.printf(" %d L/min [%d]\n", pressureValue, warnLevel);
@@ -308,7 +310,7 @@ void debug_out(){
 
 void DISPLAY_MENU_MODE(){
 
-    tft.fillScreen(TFT_BLACK);
+ //   tft.fillScreen(TFT_BLACK);
     for (int i = 0; i < nMainMenu; i++) {
       if (i == nSelectedMainMenu) {
         tft.setTextSize(1.8);
@@ -323,19 +325,16 @@ void DISPLAY_MENU_MODE(){
 }
 void DISPLAY_BOOT_MODE(){
 
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("BOOTING...", 30, 50, 4);
 }
 void DISPLAY_RUNNING_MODE(){
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel), 30, 50, 4);
 }
 void DISPLAY_WARN_CHANGE_MODE(){
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("Warn Level: " + String(warnLevel), 30, 50, 4);
@@ -344,7 +343,6 @@ void DISPLAY_WARN_CHANGE_MODE(){
 }
 void DISPLAY_INFO_MODE(){
 
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("ID: 0x112334", 30, 50, 4);
@@ -364,29 +362,27 @@ void DISPLAY_SETTING_MODE(){
 }
 void DISPLAY_NET_SETTING_MODE(){
 
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("NET_SETTING_MODE", 30, 50, 4);
 }
 void DISPLAY_NET_CHECK_MODE(){
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("NETWORK CHECKING", 30, 50, 4);
 }
 void DISPLAY_REBOOT_MODE(){
 
-        tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("REBOOT", 30, 50, 4);
 }
 
 void update_lcd(enum Mode_Type funcName){
-     if (funcName >= MENU_MODE && funcName <= REBOOT_MODE) {
-        functionPointers[funcName]();
-    } else {
-        tft.drawString("Invalid function name.\n",100, 100, 6);
-    }
+    //  if (funcName >= MENU_MODE && funcName <= REBOOT_MODE) {
+    //     functionPointers[funcName]();
+    // } else {
+    //     tft.drawString("Invalid function name.\n",100, 100, 6);
+    // }
+         functionPointers[funcName]();
 }
