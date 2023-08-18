@@ -90,7 +90,7 @@ void hndlr_btnUp(Button2 &btn) {
   switch (btn.getType()) {
     case single_click:
       if (CUR_MODE == MENU_MODE){
-        nSelectedMainMenu = nSelectedMainMenu == nMainMenu - 1 ? nMainMenu - 1  : nSelectedMainMenu + 1;
+      nSelectedMainMenu = nSelectedMainMenu == 0 ? 0 : nSelectedMainMenu - 1;
       Serial.printf("### Selected MainMenu item: %d", nSelectedMainMenu);//debug
       }
 
@@ -98,7 +98,8 @@ void hndlr_btnUp(Button2 &btn) {
         warnLevel = warnLevel == MAX_WARN_LEVEL ? MAX_WARN_LEVEL : warnLevel + 1;
 
       else if (CUR_MODE == SETTING_MODE){
-        nSelectedSubMenu = nSelectedSubMenu == nSubMenu - 1 ? nSubMenu - 1 : nSelectedSubMenu + 1;
+
+      nSelectedSubMenu = nSelectedSubMenu == 0 ? 0 : nSelectedSubMenu - 1;
         Serial.printf("### Selected Submenu item: %d", nSelectedSubMenu);//debug
       }
     case long_click:
@@ -114,11 +115,9 @@ void hndlr_btnDn(Button2 &btn) {
   switch (btn.getType()) {
   case single_click:
     if (CUR_MODE == MENU_MODE)
-      nSelectedMainMenu = nSelectedMainMenu == 0 ? 0 : nSelectedMainMenu - 1;
-
+      nSelectedMainMenu = nSelectedMainMenu == nMainMenu - 1 ? nMainMenu - 1  : nSelectedMainMenu + 1;
     else if (CUR_MODE == SETTING_MODE)
-      nSelectedSubMenu = nSelectedSubMenu == 0 ? 0 : nSelectedSubMenu - 1;
-
+      nSelectedSubMenu = nSelectedSubMenu == nSubMenu - 1 ? nSubMenu - 1 : nSelectedSubMenu + 1;
     else if (CUR_MODE == WARN_CHANGE_MODE)
       warnLevel = warnLevel == MIN_WARN_LEVEL ? warnLevel : warnLevel - 1;
 
@@ -218,7 +217,7 @@ void update_display() {
         tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel)+"]", 30, 50, 4);
+        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel), 30, 50, 4);
   }
 
   else if (CUR_MODE == INFO_MODE) {

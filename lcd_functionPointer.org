@@ -1,0 +1,113 @@
+#+title: Lcd Function Pointer
+
+#+begin_src c
+/*
+  Tests string alignment
+
+  Normally strings are printed relative to the top left corner but this can be
+  changed with the setTextDatum() function. The library has #defines for:
+
+  TL_DATUM = Top left
+  TC_DATUM = Top centre
+  TR_DATUM = Top right
+  ML_DATUM = Middle left
+  MC_DATUM = Middle centre
+  MR_DATUM = Middle right
+  BL_DATUM = Bottom left
+  BC_DATUM = Bottom centre
+  BR_DATUM = Bottom right
+
+
+  Needs fonts 2, 4, 6, 7 and 8
+
+  Make sure all the display driver and pin connections are correct by
+  editing the User_Setup.h file in the TFT_eSPI library folder.
+
+  #########################################################################
+  ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
+  #########################################################################
+,*/
+
+
+#include <TFT_eSPI.h> // Hardware-specific library
+#include <SPI.h>
+
+TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
+
+unsigned long drawTime = 0;
+
+
+// Define an enumeration of function names
+enum FunctionNames {
+FUNCTION_ONE,
+FUNCTION_TWO,
+FUNCTION_THREE
+};
+
+// Define function prototypes
+void func1();
+void func2();
+void func3();
+
+// Create an array of function pointers
+void (*functionPointers[])(void) = {
+func1,
+func2,
+func3
+};
+
+void setup(void) {
+    Serial.begin(115200);
+    tft.init();
+    tft.setRotation(1);
+    tft.fillScreen(TFT_BLUE);
+}
+
+void loop() {
+    update(FUNCTION_ONE);
+    delay(1000);
+
+    update(FUNCTION_TWO);
+    delay(1000);
+
+    update(FUNCTION_THREE);
+    delay(1000);
+}
+
+
+// Define the functions
+void func1() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextDatum(datum);
+    tft.setTextSize(1);
+    tft.drawString("func1111", 100,0, 4);
+}
+
+void func2() {
+
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextDatum(datum);
+    tft.setTextSize(1);
+    tft.drawString("func2", 100,50, 4);
+}
+
+void func3() {
+
+    tft.fillScreen(TFT_BLUE);
+    tft.setTextDatum(datum);
+    tft.setTextSize(1);
+    tft.drawString("func3", 100,100, 4);
+}
+
+// Define the update function
+void update(enum FunctionNames funcName) {
+    if (funcName >= FUNCTION_ONE && funcName <= FUNCTION_THREE) {
+        functionPointers[funcName]();
+    } else {
+        tft.drawString("Invalid function name.\n",100, 100, 6);
+    }
+}
+
+
+
+#+end_src
