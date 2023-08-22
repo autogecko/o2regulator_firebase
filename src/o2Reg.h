@@ -30,6 +30,14 @@
 #define TFT_ORANGE      0xFDA0
 #define TFT_GREENYELLOW 0xB7E0
 
+#define USER_EMAIL "minux4it@gmail.com"
+#define USER_PASSWORD "USER_PASSWORD"
+#define pinBtnUp 25
+#define pinBtnMenu 33
+#define pinBtnDn 32
+#define pinSenor 35
+#define pinWiFiSet 26
+
 enum Mode_Type {
   MENU_MODE = 0,
   BOOT_MODE,
@@ -70,33 +78,32 @@ static Button2 btnUp, btnMenu, btnDn ;
 
 extern WiFiManager wm;
 extern TFT_eSPI tft;
-static int pressureValue = 100;
-// ------------------------------------------------------------------
-//
+extern float pressureValue;
 // extern "C" void set_mode(int _CUR_);
 // extern "C" void hndlr_btnUp(Button2 &btn) ;
 // extern "C" void hndlr_btnMenu(Button2 &btn);
 // extern "C" void hndlr_btnDn(Button2 &btn) ;
 // extern "C" void update_display();
 
-void set_mode(int _CUR_);
-void hndlr_btnUp(Button2 &btn) ;
+void set_mode(enum Mode_Type _CUR_);
+void hndlr_btnUp(Button2 &btn);
 void hndlr_btnMenu(Button2 &btn);
-void hndlr_btnDn(Button2 &btn) ;
+void hndlr_btnDn(Button2 &btn);
 void update_display();
 void update_display_temp();
 
-void update_lcd(enum Mode_Type );
+void update_lcd(enum Mode_Type);
 void debug_out();
 void test_fbase();
 
- void DISPLAY_MENU_MODE ();
- void DISPLAY_BOOT_MODE();
- void DISPLAY_RUNNING_MODE();
- void DISPLAY_WARN_CHANGE_MODE();
- void DISPLAY_INFO_MODE();
- void DISPLAY_SETTING_MODE();
- void DISPLAY_NET_SETTING_MODE();
- void DISPLAY_NET_CHECK_MODE();
- void DISPLAY_REBOOT_MODE();
+void DISPLAY_MENU_MODE();
+void DISPLAY_BOOT_MODE();
+void DISPLAY_RUNNING_MODE();
+void DISPLAY_WARN_CHANGE_MODE();
+void DISPLAY_INFO_MODE();
+void DISPLAY_SETTING_MODE();
+void DISPLAY_NET_SETTING_MODE();
+void DISPLAY_NET_CHECK_MODE();
+void DISPLAY_REBOOT_MODE();
 // void DISPLAY_WARN_CONFIRM_MODE();
+float get_pressure();

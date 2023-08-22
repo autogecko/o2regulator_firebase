@@ -33,6 +33,7 @@
 
 /* 4. Define the user Email and password that alreadey registerd or added in your project */
 
+
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
@@ -41,20 +42,21 @@ unsigned long count ;
 bool signupOK ;
 char * devicePath = "device/oxy01/o2_val";
 
-#define USER_EMAIL "USER_EMAIL"
-#define USER_PASSWORD "USER_PASSWORD"
-#define pinBtnUp 25
-#define pinBtnMenu 33
-#define pinBtnDn 32
-#define pinSenor 35
-#define pinWiFiSet 26
+int tDelay_FireBase = 5000;
+int tDelay_Sensing= 3000;
+int tNow_FireBase = 0;
+int tNow_Sensing = 0;
 
 
 
 
-bool WiFistatus = false;
-
+void configModeCallback(WiFiManager *myWiFiManager);
 void publish_data(char *devicePath, float valPressure);
+
+int WiFiStatus;
+
+
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -62,21 +64,31 @@ void setup() {
   delay(50);
   pinMode(pinWiFiSet, INPUT_PULLUP);
 
+  WiFiStatus = WiFi.status();
+  tft.init(TFT_BLACK);
+  tft.setRotation(1);
+  set_mode(BOOT_MODE);
+  update_lcd(CUR_MODE);
 //----------------------------------------
 
   bool res;
   res = wm.autoConnect("o2WIFI","CHANGEME"); // password protected ap
-    if(!res) {
-        Serial.println("Failed to connect");
-        // ESP.restart();
-    }
-    else {
-        //if you get here you have connected to the WiFi
-        Serial.println("connected...yeey :)");
-    }
+  if(!res) {
+      Serial.println("Failed to connect");
+      // ESP.restart();
+  }
+  else {
+      //if you get here you have connected to the WiFi
+      Serial.println("connected...yeey :)");
+  }
 
+
+  Serial.print("WiFiStatus: ");
+  Serial.println(String(WiFiStatus));
+  Serial.println(WiFi.localIP());
+
+  wm.setAPCallback(configModeCallback);
 //----------------------------------------
-  
   config.api_key = API_KEY;
 
   // Assign the RTDB URL (required)
@@ -84,11 +96,11 @@ void setup() {
 
   // Assign the user sign in credentials
   if (Firebase.signUp(&config, &auth, "", "")){
-    Serial.println("ok");
-    signupOK = true;        // this is the anonymous sign in
+      Serial.println("ok");
+      signupOK = true;        // this is the anonymous sign in
   }
   else {
-    Serial.printf("%s\n", config.signer.signupError.message.c_str());
+      Serial.printf("%s\n", config.signer.signupError.message.c_str());
   }
 
   // Assign the callback function for the long running token generation task
@@ -96,6 +108,7 @@ void setup() {
 
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
+
   // Buton Setup
   btnUp.begin(pinBtnUp);
   btnMenu.begin(pinBtnMenu);
@@ -112,35 +125,29 @@ void setup() {
   Serial.println("-- Button Setup");
   delay(500);
 
-//----------------------------------------
-tft.init();
-tft.setRotation(1);
-tft.fillScreen(TFT_BLACK);
-tft.setTextColor(TFT_BLUE, TFT_WHITE);
-tft.setTextSize(2);
-tft.drawString("Welcome iO2",30, 120,4);
-//----------------------------------------
-  // Network Setup
-  //
-  Serial.println("-- Network Setup");
-  delay(500);
-  //Network Check
-Serial.println("-- Network Check ");
-//   CUR_MODE = RUNNING_MODE;
-//  ESP_LOGW(TASK1_TAG,"hello loogoogogo from setup");
-tft.fillScreen(TFT_BLACK);
+
+
+//delay(2000);
+  set_mode(RUNNING_MODE);
 }
 void loop() {
     btnUp.loop();
     btnDn.loop();
     btnMenu.loop();
     update_lcd(CUR_MODE);
+    if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
+        tNow_FireBase = millis();
+        publish_data(devicePath,pressureValue );
+        Serial.println("Value: "+ String(pressureValue));
 
-    /* if(Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 3000 || sendDataPrevMillis == 0)){ */
-    /*     sendDataPrevMillis = millis(); */
 
-    /*     publish_data(devicePath, random(0,10)/10+random(0,12)); */
-
+    }
+    if(millis() - tNow_Sensing > tDelay_FireBase){
+        tNow_Sensing = millis();
+        pressureValue = get_pressure();
+        Serial.println("ana: "+ String(analogRead(pinSenor)));
+        Serial.println("pressure: "+ String(pressureValue));
+    }
 }
 
 void publish_data(char *devicePath, float valPressure){

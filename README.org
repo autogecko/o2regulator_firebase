@@ -1,0 +1,54 @@
+#+title: Readme
+
+* Platformio.ini
+#+begin_src makefile
+[env:esp32dev]
+platform = espressif32
+board = esp32dev
+framework = arduino
+lib_ldf_mode = deep
+lib_deps =
+	lennarthennigs/Button2@^2.2.4
+	./include/ArduinoJson513.zip
+	https://github.com/knolleary/pubsubclient.git
+	https://github.com/tzapu/WiFiManager.git
+	https://github.com/dreed47/WifiMQTTManager.git
+	;;bodmer/TFT_eSPI@^2.4.31
+;;	sporniket/St7789-by-sporniket@^0.0.1
+	https://github.com/Bodmer/TFT_eSPI.git
+
+#+end_src
+* LCD
+** Library
+Bodmer/TFT_eSPI
+** 설정
+- User_Setup.h 편집
+  1. #56 #define ST7789 선택
+     - V2와 ILI9341 둘다 해봐라 어떤때는 색이 반전되고 다시 되었다가 엉망.
+  2. #define TFT_WIDTH, #define TFT_HEIGHT 값 할당
+  3. 핀배열
+     | SPI  | MCU | LCD  | 비고    |
+     |------+-----+------+--------|
+     | MISO |  19 | X    | 사용안함 |
+     | MOSI |  23 | DIN  |        |
+     | CLK  |  18 | SCLK |        |
+     | CS   |  15 | CS   |        |
+     | DC   |   2 | DC   |        |
+     | RST  |   4 | RST  |        |
+** 글자위치
+*** drawString 리턴값으로 연속으로 위치 잡기
+#+begin_src c
+int16_t x = 10;
+  int16_t y = 10;
+  int16_t val = 123;
+
+  x+= tft.drawNumber(val, x, y);
+  tft.drawString(" F", x, y);
+// drawNumber, drawString, drawFloat은 출력하고 자신의 Width 값을리턴한다.
+// 아래 한 줄로 바꿀수 있다.
+tft.drawString(" F", tft.drawNumber(val, 10, 20) + 10, 20);
+
+//또는
+ float f = 123.45
+  tft.drawFloat(f, tft.drawString("$", 10, 40) + 10, 40);
+#+end_src

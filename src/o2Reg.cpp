@@ -7,19 +7,45 @@ int warnLevel = 3;
 
 
 WiFiManager wm;
+
 char MODE_ITEM[10][20] = {"MEMU_MODE","BOOT_MODE","RUNNING_MODE","WARN_CHANGE_MODE","INFO_MODE","SETTING_MODE","NET_SETTING_MODE","NET_CHECK_MODE","REBOOT_MODE","WARN_CONFIRM_MODE"};
 //char MODE_SUB_SETTING_ITEM[3][20] =
 
 char mainMenuItem[nMainMenu][12] = {"Inforamtion","Setting", "Return" };
 char subMenuItem[nSubMenu][12] = {"Networks","Warn Level","Return" };
+String deviceID ;
 
 int nSelectedMainMenu = 0;
 int nSelectedSubMenu = 0;
 
+float pressureValue = 0.0;
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
+typedef struct {
+    double sensor;
+    double liter;
+} LinearMapping;
 
-Mode_Type CUR_MODE = MENU_MODE;
+LinearMapping linearMappings[] = {
+    {98, 0},
+    {100, 1},
+    {107, 2},
+    {113, 3},
+    {125, 4},
+    {139, 5},
+    {158, 6},
+    {181, 7},
+    {204, 8},
+    {238, 9},
+    {274, 10},
+    {326, 11},
+    {385, 12},
+    {454, 13},
+    {536, 14},
+    {600, 15}
+};
+
+Mode_Type CUR_MODE = BOOT_MODE;
 
 #define TFT_BLACK       0x0000
 #define TFT_NAVY        0x000F
@@ -65,10 +91,28 @@ void set_mode(Mode_Type _CUR_){
       delay(500);
       Serial.printf("%d sec to reboot\n", i);
     }
-//    CUR_MODE = RUNNING_MODE; //debug
+  }
+  else if(CUR_MODE == BOOT_MODE) {
+  tft.fillScreen(TFT_BLACK);
+   deviceID = ESP.getChipModel();
+   Serial.println(String(deviceID));
   }
 
+  else if(CUR_MODE == NET_SETTING_MODE) {
+    update_lcd(CUR_MODE);
+    wm.startConfigPortal(ESP.getChipModel());
 
+  /* bool res; */
+  /* res = wm.autoConnect("o2WIFI","CHANGEME"); // password protected ap */
+  /*   if(!res) { */
+  /*       Serial.println("Failed to connect"); */
+  /*       // ESP.restart(); */
+  /*   } */
+  /*   else { */
+  /*       //if you get here you have connected to the WiFi */
+  /*       Serial.println("connected...yeey :)"); */
+  /*   } */
+}
 }
 
 // 25 pin
@@ -171,8 +215,7 @@ bool initWiFi() {
 void update_display() {
 
   if (CUR_MODE == BOOT_MODE){
-   tft.println("Weleomc iO2");
-   tft.println("[M] to MENU");
+
   }
 
   else if (CUR_MODE == MENU_MODE) {
@@ -310,7 +353,7 @@ void debug_out(){
 
 void DISPLAY_MENU_MODE(){
 
- //   tft.fillScreen(TFT_BLACK);
+        tft.setTextDatum(TL_DATUM);
     for (int i = 0; i < nMainMenu; i++) {
       if (i == nSelectedMainMenu) {
         tft.setTextSize(1.8);
@@ -324,15 +367,25 @@ void DISPLAY_MENU_MODE(){
     }
 }
 void DISPLAY_BOOT_MODE(){
-
-        tft.setTextSize(1.8);
+        tft.setTextSize(1.9);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("BOOTING...", 30, 50, 4);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawString("Welcome",120, 80,4);
+
+        tft.setTextSize(2);
+        tft.setTextColor(TFT_BLUE, TFT_BLACK);
+
+        tft.drawString("iO2",120, 140,4);
 }
 void DISPLAY_RUNNING_MODE(){
-        tft.setTextSize(1.8);
+        tft.setTextSize(2.5);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel), 30, 50, 4);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawFloat(pressureValue,1 ,120, 120, 7);
+
+        tft.setTextSize(1.5);
+        tft.setTextDatum(TC_DATUM);
+        tft.drawString(" L/min [" + String(warnLevel) + "]", 120, 200, 4);
 }
 void DISPLAY_WARN_CHANGE_MODE(){
         tft.setTextSize(1.8);
@@ -343,9 +396,12 @@ void DISPLAY_WARN_CHANGE_MODE(){
 }
 void DISPLAY_INFO_MODE(){
 
-        tft.setTextSize(1.8);
+        tft.setTextSize(1.4);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("ID: 0x112334", 30, 50, 4);
+
+        tft.drawString("ID: " + String(ESP.getChipModel()), 30,50, 4);
+        tft.drawString("SSID: "+ WiFi.SSID(), 30,90 , 4);
+        tft.drawString("GAS:  40 L", 30, 130, 4);
 }
 void DISPLAY_SETTING_MODE(){
     for (int i = 0; i < nSubMenu; i++) {
@@ -362,10 +418,17 @@ void DISPLAY_SETTING_MODE(){
 }
 void DISPLAY_NET_SETTING_MODE(){
 
-        tft.setTextSize(1.8);
+
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextSize(1.4);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("NET_SETTING_MODE", 30, 50, 4);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawString("SSID: ",120,60,4);
+        tft.drawString(String(ESP.getChipModel()), 120, 100, 4);
+        tft.setTextSize(1.2);
+        tft.drawString("Reboot After Setting",120, 140, 4);
 }
+
 void DISPLAY_NET_CHECK_MODE(){
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -385,4 +448,37 @@ void update_lcd(enum Mode_Type funcName){
     //     tft.drawString("Invalid function name.\n",100, 100, 6);
     // }
          functionPointers[funcName]();
+}
+
+void configModeCallback(WiFiManager *myWiFiManager){
+  Serial.println("CallBack: Entering Config Mode");
+  tft.fillScreen(TFT_BLACK);
+  tft.drawString("SSID: "+ String(ESP.getChipModel()), 120,60, 4 );
+}
+
+
+
+double calculateLinearInterpolation(double x1, double y1, double x2, double y2, int x) {
+    return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+}
+
+float get_pressure() {
+    int sensorValue;
+    sensorValue = analogRead(pinSenor);
+    double literValue = -1;
+
+    for (int i = 0; i < sizeof(linearMappings) / sizeof(linearMappings[0]) - 1; i++) {
+        if (sensorValue >= linearMappings[i].sensor && sensorValue <= linearMappings[i + 1].sensor) {
+            literValue = calculateLinearInterpolation(
+                linearMappings[i].sensor, linearMappings[i].liter,
+                linearMappings[i + 1].sensor, linearMappings[i + 1].liter,
+                sensorValue
+            );
+            break;
+        }
+    }
+
+      return literValue;
+
+
 }
