@@ -61,6 +61,19 @@ extern Mode_Type CUR_MODE ;
 #define MAX_WARN_LEVEL 12
 #define RESET_BUTTON  26
 
+//----------------------------------------
+// WiFiManager
+
+#ifdef ESP8266
+#include <ESP8266mDNS.h>
+#elif defined(ESP32)
+#include <ESPmDNS.h>
+#endif
+
+// select which pin will trigger the configuration portal when set to LOW
+#define TRIGGER_PIN 25
+
+//----------------------------------------------------
 
 
 extern int warnLevel ;
@@ -107,3 +120,4 @@ void DISPLAY_NET_CHECK_MODE();
 void DISPLAY_REBOOT_MODE();
 // void DISPLAY_WARN_CONFIRM_MODE();
 float get_pressure();
+void doWiFiManager();

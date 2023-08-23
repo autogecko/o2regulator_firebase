@@ -8,6 +8,8 @@ int warnLevel = 3;
 
 WiFiManager wm;
 
+
+//----------------------------------------
 char MODE_ITEM[10][20] = {"MEMU_MODE","BOOT_MODE","RUNNING_MODE","WARN_CHANGE_MODE","INFO_MODE","SETTING_MODE","NET_SETTING_MODE","NET_CHECK_MODE","REBOOT_MODE","WARN_CONFIRM_MODE"};
 //char MODE_SUB_SETTING_ITEM[3][20] =
 
@@ -100,18 +102,7 @@ void set_mode(Mode_Type _CUR_){
 
   else if(CUR_MODE == NET_SETTING_MODE) {
     update_lcd(CUR_MODE);
-    wm.startConfigPortal(ESP.getChipModel());
 
-  /* bool res; */
-  /* res = wm.autoConnect("o2WIFI","CHANGEME"); // password protected ap */
-  /*   if(!res) { */
-  /*       Serial.println("Failed to connect"); */
-  /*       // ESP.restart(); */
-  /*   } */
-  /*   else { */
-  /*       //if you get here you have connected to the WiFi */
-  /*       Serial.println("connected...yeey :)"); */
-  /*   } */
 }
 }
 
@@ -456,8 +447,6 @@ void configModeCallback(WiFiManager *myWiFiManager){
   tft.drawString("SSID: "+ String(ESP.getChipModel()), 120,60, 4 );
 }
 
-
-
 double calculateLinearInterpolation(double x1, double y1, double x2, double y2, int x) {
     return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
 }
@@ -482,3 +471,4 @@ float get_pressure() {
 
 
 }
+

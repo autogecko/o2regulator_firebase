@@ -64,6 +64,7 @@ void setup() {
   delay(50);
   pinMode(pinWiFiSet, INPUT_PULLUP);
 
+  wm.setHostname("MDNSEXAMPLE");
   WiFiStatus = WiFi.status();
   tft.init(TFT_BLACK);
   tft.setRotation(1);
@@ -134,7 +135,10 @@ void loop() {
     btnUp.loop();
     btnDn.loop();
     btnMenu.loop();
+    doWiFiManager();
+
     update_lcd(CUR_MODE);
+
     if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
         tNow_FireBase = millis();
         publish_data(devicePath,pressureValue );
