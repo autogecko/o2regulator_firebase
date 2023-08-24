@@ -47,8 +47,7 @@ enum Mode_Type {
   SETTING_MODE,
   NET_SETTING_MODE,
   NET_CHECK_MODE,
-  REBOOT_MODE = 8,
-//  WARN_CONFIRM_MODE
+  REBOOT_MODE ,
 };
 
 extern void (*functionPointers[])(void) ;
@@ -76,7 +75,9 @@ extern Mode_Type CUR_MODE ;
 //----------------------------------------------------
 
 
-extern int warnLevel ;
+extern int warnHighLevel;
+extern int warnLowLevel ;
+
 extern int nSelectedMainMenu ;
 extern int nSelectedSubMenu ;
 
@@ -92,11 +93,16 @@ static Button2 btnUp, btnMenu, btnDn ;
 extern WiFiManager wm;
 extern TFT_eSPI tft;
 extern float pressureValue;
-// extern "C" void set_mode(int _CUR_);
-// extern "C" void hndlr_btnUp(Button2 &btn) ;
-// extern "C" void hndlr_btnMenu(Button2 &btn);
-// extern "C" void hndlr_btnDn(Button2 &btn) ;
-// extern "C" void update_display();
+
+extern unsigned int timeout;
+extern unsigned int startTime;
+extern bool portalRunning;
+extern bool startAP;
+extern bool wm_nonblocking;
+
+
+extern int warnLowLevel;
+extern int warnHighLevel;
 
 void set_mode(enum Mode_Type _CUR_);
 void hndlr_btnUp(Button2 &btn);
@@ -118,6 +124,12 @@ void DISPLAY_SETTING_MODE();
 void DISPLAY_NET_SETTING_MODE();
 void DISPLAY_NET_CHECK_MODE();
 void DISPLAY_REBOOT_MODE();
-// void DISPLAY_WARN_CONFIRM_MODE();
+void DISPLAY_WARN_HIGH_MODE();
+void DISPLAY_WARN_LOW_MODE();
+
+
 float get_pressure();
 void doWiFiManager();
+void configModeCallback(WiFiManager *myWiFiManager);
+void change_running_mode(float);
+void checkWarn();

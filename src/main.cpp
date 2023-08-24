@@ -34,7 +34,6 @@
 
 /* 4. Define the user Email and password that alreadey registerd or added in your project */
 
-
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
@@ -44,19 +43,13 @@ bool signupOK ;
 char * devicePath = "device/oxy01/o2_val";
 
 int tDelay_FireBase = 5000;
-int tDelay_Sensing= 3000;
+int tDelay_Sensing= 1000;
 int tNow_FireBase = 0;
 int tNow_Sensing = 0;
 
 
 //WiFiManager wm;
-unsigned int  timeout   = 120; // seconds to run for
-unsigned int  startTime = millis();
-bool portalRunning      = false;
-bool startAP            = false; // start AP and webserver if true, else start only webserver
 
-
-void configModeCallback(WiFiManager *myWiFiManager);
 void publish_data(char *devicePath, float valPressure);
 
 int WiFiStatus;
@@ -74,6 +67,7 @@ void setup() {
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   wm.setHostname("MDNSEXAMPLE");
   wm.setConfigPortalTimeout(30); // auto close configportal after n seconds
+  if(wm_nonblocking) wm.setConfigPortalBlocking(false);
 
   WiFiStatus = WiFi.status();
   Serial.setDebugOutput(true);
@@ -146,21 +140,25 @@ void loop() {
     btnDn.loop();
     btnMenu.loop();
     doWiFiManager();
-
+//    checkWarn();
     update_lcd(CUR_MODE);
 
-    if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
-        tNow_FireBase = millis();
-        publish_data(devicePath,pressureValue );
-        Serial.println("Value: "+ String(pressureValue));
+    // if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
+    //     tNow_FireBase = millis();
+    //     publish_data(devicePath,pressureValue );
+    //     Serial.println("Value: "+ String(pressureValue));
 
 
-    }
-    if(millis() - tNow_Sensing > tDelay_FireBase){
+    // }
+    if(millis() - tNow_Sensing > tDelay_Sensing){
         tNow_Sensing = millis();
         pressureValue = get_pressure();
+//        if(pressureValue >= warnHighLevel || pressureValue <= warnLowLevel) set_mode(WARN_MODE);
+
+        //doWarn();
         Serial.println("ana: "+ String(analogRead(pinSenor)));
-        Serial.println("pressure: "+ String(pressureValue));
+      //  Serial.println("pressure: "+ String(pressureValue));
+        Serial.printf("pressure: %.1f \n",pressureValue);
     }
 }
 
@@ -177,41 +175,3 @@ void publish_data(char *devicePath, float valPressure){
     }
 }
 
-void doWiFiManager(){
-  // is auto timeout portal running
-  if(portalRunning){
-    wm.process(); // do processing
-
-    // check for timeout
-    if((millis()-startTime) > (timeout*1000)){
-      Serial.println("portaltimeout");
-      portalRunning = false;
-      if(startAP){
-        wm.stopConfigPortal();
-      }
-      else{
-        wm.stopWebPortal();
-      }
-   }
-
-  }
-
-  // is configuration portal requested?
-  if(digitalRead(TRIGGER_PIN) == LOW && (!portalRunning)) {
-
-  Serial.println("NetPressed!");
-    if(startAP){
-      Serial.println("Button Pressed, Starting Config Portal");
-      wm.setConfigPortalBlocking(false);
-      wm.startConfigPortal();
-    }
-    else{
-      Serial.println("Button Pressed, Starting Config Portal");
-
-      wm.setConfigPortalBlocking(false);
-      wm.startConfigPortal();
-    }
-    portalRunning = true;
-    startTime = millis();
-  }
-}

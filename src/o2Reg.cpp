@@ -3,14 +3,14 @@
 // const int nMainMenu = 3;
 // const int nSubMenu = 3;
 
-int warnLevel = 3;
-
+int warnLowLevel = 3;
+int warnHighLevel = 12;
 
 WiFiManager wm;
 
 
 //----------------------------------------
-char MODE_ITEM[10][20] = {"MEMU_MODE","BOOT_MODE","RUNNING_MODE","WARN_CHANGE_MODE","INFO_MODE","SETTING_MODE","NET_SETTING_MODE","NET_CHECK_MODE","REBOOT_MODE","WARN_CONFIRM_MODE"};
+char MODE_ITEM[][20] = {"MEMU_MODE","BOOT_MODE","RUNNING_MODE","WARN_CHANGE_MODE","INFO_MODE","SETTING_MODE","NET_SETTING_MODE","NET_CHECK_MODE","REBOOT_MODE"};
 //char MODE_SUB_SETTING_ITEM[3][20] =
 
 char mainMenuItem[nMainMenu][12] = {"Inforamtion","Setting", "Return" };
@@ -68,7 +68,14 @@ Mode_Type CUR_MODE = BOOT_MODE;
 #define TFT_ORANGE      0xFDA0
 #define TFT_GREENYELLOW 0xB7E0
 // ------------------------------------------------------------------
+
+unsigned int  timeout   = 120; // seconds to run for
+unsigned int  startTime = millis();
+bool portalRunning      = false;
+bool startAP            = false; // start AP and webserver if true, else start only webserver
+bool wm_nonblocking = false;
 // const int MIN_WARN_LEVEL = 3;  // default 최저 경고레벨
+//
 // const int MAX_WARN_LEVEL = 12; // default 최고 경고레벨
 
  void (*functionPointers[])(void) = {
@@ -81,14 +88,18 @@ Mode_Type CUR_MODE = BOOT_MODE;
  DISPLAY_NET_SETTING_MODE,
  DISPLAY_NET_CHECK_MODE,
  DISPLAY_REBOOT_MODE,
- //DISPLAY_WARN_CONFIRM_MODE
 };
 
 void set_mode(Mode_Type _CUR_){
   CUR_MODE = _CUR_;
   Serial.printf("### CURRENT SET MODE from setmode(%s) \n", MODE_ITEM[CUR_MODE]);
-  tft.fillScreen(TFT_BLACK);
-  if(CUR_MODE == REBOOT_MODE){
+  if(CUR_MODE == RUNNING_MODE){
+    if((int)pressureValue >= warnHighLevel) tft.fillScreen(TFT_ORANGE);
+    else if((int) pressureValue <= warnLowLevel) tft.fillScreen(TFT_RED);
+    else tft.fillScreen(TFT_BLACK);
+  }
+  else if(CUR_MODE == REBOOT_MODE){
+
     for(int i=0; i<3; i++){
       delay(500);
       Serial.printf("%d sec to reboot\n", i);
@@ -99,9 +110,26 @@ void set_mode(Mode_Type _CUR_){
    deviceID = ESP.getChipModel();
    Serial.println(String(deviceID));
   }
-
   else if(CUR_MODE == NET_SETTING_MODE) {
     update_lcd(CUR_MODE);
+
+  if(!portalRunning) {
+
+  Serial.println("NetPressed!");
+    if(startAP){
+      Serial.println("Button Pressed, Starting Config Portal");
+      wm.setConfigPortalBlocking(false);
+      wm.startConfigPortal();
+    }
+    else{
+      Serial.println("Button Pressed, Starting Config Portal");
+
+      wm.setConfigPortalBlocking(false);
+      wm.startConfigPortal();
+    }
+    portalRunning = true;
+    startTime = millis();
+  }
 
 }
 }
@@ -116,7 +144,7 @@ void hndlr_btnMenu(Button2 &btn) {
       else if (CUR_MODE == MENU_MODE && nSelectedMainMenu == 1) set_mode(SETTING_MODE);
       else if (CUR_MODE == MENU_MODE && nSelectedMainMenu == 2) set_mode(RUNNING_MODE);
 
-      else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 0) set_mode(NET_SETTING_MODE);
+      else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 0) set_mode(INFO_MODE);
       else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 1) set_mode(WARN_CHANGE_MODE);
       else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 2) set_mode(RUNNING_MODE);
 
@@ -146,7 +174,7 @@ void hndlr_btnUp(Button2 &btn) {
       }
 
       else if (CUR_MODE == WARN_CHANGE_MODE)
-        warnLevel = warnLevel == MAX_WARN_LEVEL ? MAX_WARN_LEVEL : warnLevel + 1;
+        warnLowLevel = warnLowLevel == MAX_WARN_LEVEL ? MAX_WARN_LEVEL : warnLowLevel + 1;
 
       else if (CUR_MODE == SETTING_MODE){
 
@@ -170,7 +198,7 @@ void hndlr_btnDn(Button2 &btn) {
     else if (CUR_MODE == SETTING_MODE)
 nSelectedSubMenu = nSelectedSubMenu == nSubMenu - 1 ? nSubMenu - 1 : nSelectedSubMenu + 1;
     else if (CUR_MODE == WARN_CHANGE_MODE)
-      warnLevel = warnLevel == MIN_WARN_LEVEL ? warnLevel : warnLevel - 1;
+      warnLowLevel = warnLowLevel == MIN_WARN_LEVEL ? warnLowLevel : warnLowLevel - 1;
 
       Serial.printf("### Selected Sub Menu item: %d", nSelectedSubMenu);//debug
   case long_click:
@@ -244,19 +272,19 @@ void update_display() {
         tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("Warn Level: " + String(warnLevel), 30, 50, 4);
+        tft.drawString("Warn Level: " + String(warnLowLevel), 30, 50, 4);
         tft.drawString("Hole [M] to Set", 30, 80, 4);
   }
 
   // else if (CUR_MODE == WARN_CONFIRM_MODE) {
   //  Serial.printf(
   //      "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
-  //      warnLevel);
+  //      warnLowLevel);
 
   //       tft.fillScreen(TFT_BLACK);
   //       tft.setTextSize(1.8);
   //       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  //       tft.drawString("SET WARN LVL: "+String(warnLevel), 30, 50, 4);
+  //       tft.drawString("SET WARN LVL: "+String(warnLowLevel), 30, 50, 4);
   //       delay(3000);
 
   //       set_mode(RUNNING_MODE);
@@ -267,7 +295,7 @@ void update_display() {
         tft.fillScreen(TFT_BLACK);
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLevel), 30, 50, 4);
+        tft.drawString(String(pressureValue)+" L/min ["+ String(warnLowLevel), 30, 50, 4);
   }
 
   else if (CUR_MODE == INFO_MODE) {
@@ -311,21 +339,10 @@ void debug_out(){
    }
   }
 
-  else if (CUR_MODE == WARN_CHANGE_MODE) {
-   Serial.printf("WARN LEVEL: %d L/min\n", warnLevel);
-   Serial.printf("HOLD menu to Set /n Click to Return\n");
-  }
 
-  // else if (CUR_MODE == WARN_CONFIRM_MODE) {
-  //  Serial.printf(
-  //      "*** SET WARN_LEVEL : %d *** \n Return to RUNNING_MODE in 3 sec\n",
-  //      warnLevel);
-  //  delay(3000);
-  //  set_mode(RUNNING_MODE);
-  // }
 
   else if (CUR_MODE == RUNNING_MODE) {
-   Serial.printf(" %d L/min [%d]\n", pressureValue, warnLevel);
+   Serial.printf(" %d L/min [%d]\n", pressureValue, warnLowLevel);
   }
 
   else if (CUR_MODE == INFO_MODE) {
@@ -337,9 +354,6 @@ void debug_out(){
     Serial.printf("CHECKING NETWORK \n");
   }
 
-  else if (CUR_MODE == REBOOT_MODE){
-    Serial.printf("REBOOT 5,4,3,2,1");
-}
 }
 
 void DISPLAY_MENU_MODE(){
@@ -376,12 +390,12 @@ void DISPLAY_RUNNING_MODE(){
 
         tft.setTextSize(1.5);
         tft.setTextDatum(TC_DATUM);
-        tft.drawString(" L/min [" + String(warnLevel) + "]", 120, 200, 4);
+        tft.drawString(" L/min [" + String(warnLowLevel) + "]", 120, 200, 4);
 }
 void DISPLAY_WARN_CHANGE_MODE(){
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.drawString("Warn Level: " + String(warnLevel), 30, 50, 4);
+        tft.drawString("Warn Level: " + String(warnLowLevel), 30, 50, 4);
         tft.drawString("Hole [M] to Set", 30, 80, 4);
 
 }
@@ -410,14 +424,14 @@ void DISPLAY_SETTING_MODE(){
 void DISPLAY_NET_SETTING_MODE(){
 
 
-        tft.fillScreen(TFT_BLACK);
-        tft.setTextSize(1.4);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setTextDatum(MC_DATUM);
-        tft.drawString("SSID: ",120,60,4);
-        tft.drawString(String(ESP.getChipModel()), 120, 100, 4);
-        tft.setTextSize(1.2);
-        tft.drawString("Reboot After Setting",120, 140, 4);
+        // tft.fillScreen(TFT_BLACK); //
+        // tft.setTextSize(1.4);
+        // tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        // tft.setTextDatum(MC_DATUM);
+        // tft.drawString("SSID: ",120,60,4);
+        // tft.drawString(String(ESP.getChipModel()), 120, 100, 4);
+        // tft.setTextSize(1.2);
+        // tft.drawString("Reboot After Setting",120, 140, 4);
 }
 
 void DISPLAY_NET_CHECK_MODE(){
@@ -431,6 +445,28 @@ void DISPLAY_REBOOT_MODE(){
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.drawString("REBOOT", 30, 50, 4);
 }
+void DISPLAY_WARN_LOW_MODE(){
+
+        tft.setTextSize(2.5);
+        tft.setTextColor(TFT_WHITE, TFT_RED);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawFloat(pressureValue,1 ,120, 120, 7);
+        tft.setTextSize(1.5);
+        tft.setTextDatum(TC_DATUM);
+        tft.drawString(" L/min [" + String(warnLowLevel) + "]", 120, 200, 4);
+}
+
+void DISPLAY_WARN_HIGH_MODE(){
+
+        tft.setTextSize(2.5);
+        tft.setTextColor(TFT_WHITE, TFT_ORANGE);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawFloat(pressureValue,1 ,120, 120, 7);
+        tft.setTextSize(1.5);
+        tft.setTextDatum(TC_DATUM);
+        tft.drawString(" L/min [" + String(warnLowLevel) + "]", 120, 200, 4);
+}
+
 
 void update_lcd(enum Mode_Type funcName){
     //  if (funcName >= MENU_MODE && funcName <= REBOOT_MODE) {
@@ -442,9 +478,16 @@ void update_lcd(enum Mode_Type funcName){
 }
 
 void configModeCallback(WiFiManager *myWiFiManager){
+
+        tft.fillScreen(TFT_BLACK);
+        tft.setTextSize(1.4);
+        tft.setTextColor(TFT_WHITE, TFT_BLACK);
+        tft.setTextDatum(MC_DATUM);
+        tft.drawString("SSID: ",120,60,4);
+        tft.drawString(String(ESP.getChipModel()), 120, 100, 4);
+        tft.setTextSize(1.2);
+        tft.drawString("Reboot After Setting",120, 140, 4);
   Serial.println("CallBack: Entering Config Mode");
-  tft.fillScreen(TFT_BLACK);
-  tft.drawString("SSID: "+ String(ESP.getChipModel()), 120,60, 4 );
 }
 
 double calculateLinearInterpolation(double x1, double y1, double x2, double y2, int x) {
@@ -454,7 +497,7 @@ double calculateLinearInterpolation(double x1, double y1, double x2, double y2, 
 float get_pressure() {
     int sensorValue;
     sensorValue = analogRead(pinSenor);
-    double literValue = -1;
+    float literValue = -1;
 
     for (int i = 0; i < sizeof(linearMappings) / sizeof(linearMappings[0]) - 1; i++) {
         if (sensorValue >= linearMappings[i].sensor && sensorValue <= linearMappings[i + 1].sensor) {
@@ -471,4 +514,34 @@ float get_pressure() {
 
 
 }
+void doWiFiManager(){
+  // is auto timeout portal running
+  if(portalRunning){
+    wm.process(); // do processing
 
+    // check for timeout
+    if((millis()-startTime) > (timeout*1000)){
+      Serial.println("portaltimeout");
+      portalRunning = false;
+      if(startAP){
+        wm.stopConfigPortal();
+      }
+      else{
+        wm.stopWebPortal();
+      }
+   }
+
+  }
+
+  // is configuration portal requested?
+}
+
+
+void doWarn(){
+// 아직 안 만듬
+}
+
+
+void checkWarn(){
+  if(CUR_MODE == RUNNING_MODE) set_mode(RUNNING_MODE);
+}
