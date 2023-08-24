@@ -52,3 +52,13 @@ tft.drawString(" F", tft.drawNumber(val, 10, 20) + 10, 20);
  float f = 123.45
   tft.drawFloat(f, tft.drawString("$", 10, 40) + 10, 40);
 #+end_src
+*** 고정 자리수 출력
+#+begin_src c
+  tft.setCursor(x, y);
+  tft.printf("%02d:%02d", 3, 4);
+
+  char str[10];
+  sprintf(str, "%02d:%02d", 3, 4);
+  tft.drawString(str, x, y)
+
+#+end_src

@@ -9,13 +9,11 @@
 #include <SPI.h>
 //#include "secrets.h"
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-
+#include "pitches.h"
 #include <Adafruit_NeoPixel.h>
 
 
 // ----------------------------------------
-#define NEO_PIN   22      // 네오픽셀 DI핀과 연결된 핀번호 설정
-#define NUMPIXELS  24     // 네오픽셀 LED 갯수 설정
                         //
 // --------------------
 #define TFT_BLACK       0x0000
@@ -39,12 +37,16 @@
 
 #define USER_EMAIL "minux4it@gmail.com"
 #define USER_PASSWORD "USER_PASSWORD"
-#define pinBtnUp 25
+#define pinBtnUp   25
 #define pinBtnMenu 33
-#define pinBtnDn 32
-#define pinSenor 35
+#define pinBtnDn   32
+#define pinSenor   35
 #define pinWiFiSet 26
-
+#define pinSpeaker 13
+#define pinBuzzer   13 // ESP32 pin GPIO18 connected to piezo buzzer
+#define NEO_PIN    22      // 네오픽셀 DI핀과 연결된 핀번호 설정
+#define NUMPIXELS  24     // 네오픽셀 LED 갯수 설정
+//----------------------------------------
 enum Mode_Type {
   MENU_MODE = 0,
   BOOT_MODE,
@@ -112,7 +114,10 @@ extern int warnLowLevel;
 extern int warnHighLevel;
 
 
+
 extern Adafruit_NeoPixel warnLED;
+
+extern
 void set_mode(enum Mode_Type _CUR_);
 void hndlr_btnUp(Button2 &btn);
 void hndlr_btnMenu(Button2 &btn);

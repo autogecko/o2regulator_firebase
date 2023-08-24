@@ -60,7 +60,6 @@ bool wm_nonblocking = false;
 //
 // const int MAX_WARN_LEVEL = 12; // default 최고 경고레벨
 //
-
 Adafruit_NeoPixel warnLED(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 
@@ -372,7 +371,15 @@ void DISPLAY_RUNNING_MODE(){
         tft.setTextSize(2.5);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
+   //     tft.fillRect(0, 70, 240, 100 , TFT_BLACK);
         tft.drawFloat(pressureValue,1 ,120, 120, 7);
+
+
+  // tft.setTextColor(TFT_WHITE,TFT_BLACK);
+
+  // tft.setCursor(0, 60, 7);
+  // tft.setTextSize(2.5);
+  // tft.printf("%02.1f", pressureValue);
 
         tft.setTextSize(1.5);
         tft.setTextDatum(TC_DATUM);
@@ -483,7 +490,7 @@ double calculateLinearInterpolation(double x1, double y1, double x2, double y2, 
 float get_pressure() {
     int sensorValue;
     sensorValue = analogRead(pinSenor);
-    float literValue = -1;
+    float literValue = 0.0;
 
     for (int i = 0; i < sizeof(linearMappings) / sizeof(linearMappings[0]) - 1; i++) {
         if (sensorValue >= linearMappings[i].sensor && sensorValue <= linearMappings[i + 1].sensor) {
@@ -529,19 +536,24 @@ void checkWarn(){
 
 
 void doWarn(){
+  warnLED.setBrightness(10);
   if(pressureValue >= warnHighLevel) {
-
-    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 94,14));
-    // 높을때 할일
+    warnLED.fill(warnLED.Color(255,94,14), 0, NUMPIXELS);
+    tone(pinBuzzer, NOTE_A4);
+//    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 94,14));
   }
   else if (pressureValue <= warnLowLevel){
-    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 0, 0));
+    warnLED.fill(warnLED.Color(255,0, 0), 0, NUMPIXELS);
+    tone(pinBuzzer, NOTE_A4);
+ //   for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 0, 0));
       //낮을 때 할일
     }
 
   else {
 
-    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(0, 150, 0));
+    warnLED.fill(warnLED.Color(0 ,150, 0), 0, NUMPIXELS);
+    noTone(pinBuzzer);
+  //  for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(0, 150, 0));
     //정상 일 때 할일
   }
 
