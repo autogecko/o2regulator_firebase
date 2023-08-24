@@ -10,6 +10,13 @@
 //#include "secrets.h"
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 
+#include <Adafruit_NeoPixel.h>
+
+
+// ----------------------------------------
+#define NEO_PIN   22      // 네오픽셀 DI핀과 연결된 핀번호 설정
+#define NUMPIXELS  24     // 네오픽셀 LED 갯수 설정
+                        //
 // --------------------
 #define TFT_BLACK       0x0000
 #define TFT_NAVY        0x000F
@@ -104,6 +111,8 @@ extern bool wm_nonblocking;
 extern int warnLowLevel;
 extern int warnHighLevel;
 
+
+extern Adafruit_NeoPixel warnLED;
 void set_mode(enum Mode_Type _CUR_);
 void hndlr_btnUp(Button2 &btn);
 void hndlr_btnMenu(Button2 &btn);
@@ -133,3 +142,4 @@ void doWiFiManager();
 void configModeCallback(WiFiManager *myWiFiManager);
 void change_running_mode(float);
 void checkWarn();
+void doWarn();

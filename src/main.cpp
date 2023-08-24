@@ -130,10 +130,13 @@ void setup() {
   Serial.println("-- Button Setup");
   delay(500);
 
-
+  //----------------------------------------
+  warnLED.begin();
+  warnLED.clear();
 
 //delay(2000);
   set_mode(RUNNING_MODE);
+
 }
 void loop() {
     btnUp.loop();
@@ -155,7 +158,7 @@ void loop() {
         pressureValue = get_pressure();
 //        if(pressureValue >= warnHighLevel || pressureValue <= warnLowLevel) set_mode(WARN_MODE);
 
-        //doWarn();
+        doWarn();
         Serial.println("ana: "+ String(analogRead(pinSenor)));
       //  Serial.println("pressure: "+ String(pressureValue));
         Serial.printf("pressure: %.1f \n",pressureValue);

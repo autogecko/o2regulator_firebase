@@ -49,24 +49,6 @@ LinearMapping linearMappings[] = {
 
 Mode_Type CUR_MODE = BOOT_MODE;
 
-#define TFT_BLACK       0x0000
-#define TFT_NAVY        0x000F
-#define TFT_DARKGREEN   0x03E0
-#define TFT_DARKCYAN    0x03EF
-#define TFT_MAROON      0x7800
-#define TFT_PURPLE      0x780F
-#define TFT_OLIVE       0x7BE0
-#define TFT_LIGHTGREY   0xC618
-#define TFT_DARKGREY    0x7BEF
-#define TFT_BLUE        0x001F
-#define TFT_GREEN       0x07E0
-#define TFT_CYAN        0x07FF
-#define TFT_RED         0xF800
-#define TFT_MAGENTA     0xF81F
-#define TFT_YELLOW      0xFFE0
-#define TFT_WHITE       0xFFFF
-#define TFT_ORANGE      0xFDA0
-#define TFT_GREENYELLOW 0xB7E0
 // ------------------------------------------------------------------
 
 unsigned int  timeout   = 120; // seconds to run for
@@ -77,6 +59,11 @@ bool wm_nonblocking = false;
 // const int MIN_WARN_LEVEL = 3;  // default 최저 경고레벨
 //
 // const int MAX_WARN_LEVEL = 12; // default 최고 경고레벨
+//
+
+Adafruit_NeoPixel warnLED(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
+
+
 
  void (*functionPointers[])(void) = {
  DISPLAY_MENU_MODE ,
@@ -93,10 +80,9 @@ bool wm_nonblocking = false;
 void set_mode(Mode_Type _CUR_){
   CUR_MODE = _CUR_;
   Serial.printf("### CURRENT SET MODE from setmode(%s) \n", MODE_ITEM[CUR_MODE]);
+  tft.fillScreen(TFT_BLACK);
   if(CUR_MODE == RUNNING_MODE){
-    if((int)pressureValue >= warnHighLevel) tft.fillScreen(TFT_ORANGE);
-    else if((int) pressureValue <= warnLowLevel) tft.fillScreen(TFT_RED);
-    else tft.fillScreen(TFT_BLACK);
+    tft.fillScreen(TFT_BLACK);
   }
   else if(CUR_MODE == REBOOT_MODE){
 
@@ -113,23 +99,23 @@ void set_mode(Mode_Type _CUR_){
   else if(CUR_MODE == NET_SETTING_MODE) {
     update_lcd(CUR_MODE);
 
-  if(!portalRunning) {
+    if(!portalRunning) {
 
-  Serial.println("NetPressed!");
-    if(startAP){
-      Serial.println("Button Pressed, Starting Config Portal");
-      wm.setConfigPortalBlocking(false);
-      wm.startConfigPortal();
-    }
-    else{
-      Serial.println("Button Pressed, Starting Config Portal");
+    Serial.println("NetPressed!");
+      if(startAP){
+        Serial.println("Button Pressed, Starting Config Portal");
+        wm.setConfigPortalBlocking(false);
+        wm.startConfigPortal();
+      }
+      else{
+        Serial.println("Button Pressed, Starting Config Portal");
 
-      wm.setConfigPortalBlocking(false);
-      wm.startConfigPortal();
+        wm.setConfigPortalBlocking(false);
+        wm.startConfigPortal();
+      }
+      portalRunning = true;
+      startTime = millis();
     }
-    portalRunning = true;
-    startTime = millis();
-  }
 
 }
 }
@@ -144,7 +130,7 @@ void hndlr_btnMenu(Button2 &btn) {
       else if (CUR_MODE == MENU_MODE && nSelectedMainMenu == 1) set_mode(SETTING_MODE);
       else if (CUR_MODE == MENU_MODE && nSelectedMainMenu == 2) set_mode(RUNNING_MODE);
 
-      else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 0) set_mode(INFO_MODE);
+      else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 0) set_mode(NET_SETTING_MODE);
       else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 1) set_mode(WARN_CHANGE_MODE);
       else if (CUR_MODE == SETTING_MODE && nSelectedSubMenu == 2) set_mode(RUNNING_MODE);
 
@@ -515,8 +501,7 @@ float get_pressure() {
 
 }
 void doWiFiManager(){
-  // is auto timeout portal running
-  if(portalRunning){
+ if(portalRunning){
     wm.process(); // do processing
 
     // check for timeout
@@ -530,18 +515,36 @@ void doWiFiManager(){
         wm.stopWebPortal();
       }
    }
-
   }
 
   // is configuration portal requested?
 }
 
 
-void doWarn(){
-// 아직 안 만듬
-}
 
 
 void checkWarn(){
   if(CUR_MODE == RUNNING_MODE) set_mode(RUNNING_MODE);
+}
+
+
+void doWarn(){
+  if(pressureValue >= warnHighLevel) {
+
+    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 94,14));
+    // 높을때 할일
+  }
+  else if (pressureValue <= warnLowLevel){
+    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 0, 0));
+      //낮을 때 할일
+    }
+
+  else {
+
+    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(0, 150, 0));
+    //정상 일 때 할일
+  }
+
+  warnLED.show();
+
 }
