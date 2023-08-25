@@ -63,27 +63,33 @@ void setup() {
   delay(50);
   pinMode(pinWiFiSet, INPUT_PULLUP);
 
-  // WiFiManger Setup
+  // 센서 analogRead 설정
+  ledcSetup(0,1E5,12);  // ESP32 톤전용 ledcSetup: ledcSetup(channel,1E5,12);
+  ledcAttachPin(pinBuzzer,0);  // ledcAttachPin(uint8_t pin, uint8_t channel);
+
+
+
+// WiFiManger Setup
   WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
   wm.setHostname("MDNSEXAMPLE");
   wm.setConfigPortalTimeout(30); // auto close configportal after n seconds
   if(wm_nonblocking) wm.setConfigPortalBlocking(false);
-
   WiFiStatus = WiFi.status();
-  Serial.setDebugOutput(true);
   wm.setAPCallback(configModeCallback);
   wm.autoConnect();
-
+  Serial.setDebugOutput(true);
   //----------------------------------------
-  //
 
-  // TFT Setup
+// TFT Setup
   tft.init(TFT_BLACK);
   tft.setRotation(1);
+  tft.fillScreen(TFT_BLACK);
+  img.createSprite(240, 240);
+  tft.fillScreen(TFT_BLACK);
+
+//----------------------------------------
   set_mode(BOOT_MODE);
   update_lcd(CUR_MODE);
-//----------------------------------------
-
 
 
 // WiFi Debugging
@@ -146,13 +152,13 @@ void loop() {
 //    checkWarn();
     update_lcd(CUR_MODE);
 
-    // if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
-    //     tNow_FireBase = millis();
-    //     publish_data(devicePath,pressureValue );
-    //     Serial.println("Value: "+ String(pressureValue));
+    if(Firebase.ready() && signupOK && (millis() - tNow_FireBase) > tDelay_FireBase ){
+        tNow_FireBase = millis();
+        publish_data(devicePath,pressureValue );
+        Serial.println("Value: "+ String(pressureValue));
 
 
-    // }
+    }
     if(millis() - tNow_Sensing > tDelay_Sensing){
         tNow_Sensing = millis();
         pressureValue = get_pressure();

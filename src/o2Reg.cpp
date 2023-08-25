@@ -22,6 +22,7 @@ int nSelectedSubMenu = 0;
 
 float pressureValue = 0.0;
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
+TFT_eSprite img = TFT_eSprite(&tft);  // Declare Sprite object "spr" with pointer to "tft" object
 
 typedef struct {
     double sensor;
@@ -81,7 +82,8 @@ void set_mode(Mode_Type _CUR_){
   Serial.printf("### CURRENT SET MODE from setmode(%s) \n", MODE_ITEM[CUR_MODE]);
   tft.fillScreen(TFT_BLACK);
   if(CUR_MODE == RUNNING_MODE){
-    tft.fillScreen(TFT_BLACK);
+    //tft.fillScreen(TFT_BLACK);
+    img.fillScreen(TFT_BLACK);
   }
   else if(CUR_MODE == REBOOT_MODE){
 
@@ -347,7 +349,7 @@ void DISPLAY_MENU_MODE(){
     for (int i = 0; i < nMainMenu; i++) {
       if (i == nSelectedMainMenu) {
         tft.setTextSize(1.8);
-        tft.setTextColor(TFT_WHITE, TFT_DARKGREEN);
+        tft.setTextColor(TFT_BLACK, TFT_WHITE);
         tft.drawString(mainMenuItem[i], 30, 60 * (i + 1),4);
       } else {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -357,34 +359,41 @@ void DISPLAY_MENU_MODE(){
     }
 }
 void DISPLAY_BOOT_MODE(){
-        tft.setTextSize(1.9);
+        tft.setTextSize(2);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
         tft.drawString("Welcome",120, 80,4);
 
-        tft.setTextSize(2);
+        tft.setTextSize(2.6);
         tft.setTextColor(TFT_BLUE, TFT_BLACK);
 
-        tft.drawString("iO2",120, 140,4);
+        tft.drawString("iO2",120, 160,4);
 }
 void DISPLAY_RUNNING_MODE(){
         tft.setTextSize(2.5);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
-   //     tft.fillRect(0, 70, 240, 100 , TFT_BLACK);
-        tft.drawFloat(pressureValue,1 ,120, 120, 7);
+       img.fillRect(0, 70, 240, 100 , TFT_BLACK);
+       tft.drawFloat(pressureValue,1 ,120, 120, 7);
 
-
+//        img.fillRect(0,80, 100, 240, TFT_BLACK);
+        // img.setTextDatum(MC_DATUM);
+        // img.drawString(String(pressureValue), 60, 60, 7);
+        // img.pushSprite(120,120);
   // tft.setTextColor(TFT_WHITE,TFT_BLACK);
 
   // tft.setCursor(0, 60, 7);
   // tft.setTextSize(2.5);
   // tft.printf("%02.1f", pressureValue);
 
-        tft.setTextSize(1.5);
-        tft.setTextDatum(TC_DATUM);
-        tft.drawString(" L/min [" + String(warnLowLevel) + "]", 120, 200, 4);
+       tft.setTextSize(1.8);
+       tft.setTextDatum(TC_DATUM);
+       tft.setTextColor(TFT_WHITE, TFT_BLACK);
+       tft.drawString(" L/min", 120, 200, 4);
+       tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+       tft.drawString("[" + String(warnLowLevel) + "]", 170, 200, 4);
 }
+
 void DISPLAY_WARN_CHANGE_MODE(){
         tft.setTextSize(1.8);
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -405,7 +414,7 @@ void DISPLAY_SETTING_MODE(){
     for (int i = 0; i < nSubMenu; i++) {
       if (i == nSelectedSubMenu){
         tft.setTextSize(1.8);
-        tft.setTextColor(TFT_WHITE, TFT_DARKGREEN);
+        tft.setTextColor(TFT_BLACK, TFT_WHITE);
         tft.drawString(subMenuItem[i], 30, 60 * (i + 1),4);
       } else {
         tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -539,12 +548,15 @@ void doWarn(){
   warnLED.setBrightness(10);
   if(pressureValue >= warnHighLevel) {
     warnLED.fill(warnLED.Color(255,94,14), 0, NUMPIXELS);
-    tone(pinBuzzer, NOTE_A4);
+    ledcWriteTone(0,NOTE_A4);
+   // tone(pinBuzzer, NOTE_A4);
 //    for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 94,14));
   }
   else if (pressureValue <= warnLowLevel){
     warnLED.fill(warnLED.Color(255,0, 0), 0, NUMPIXELS);
-    tone(pinBuzzer, NOTE_A4);
+
+    ledcWriteTone(0,NOTE_A4);
+    //tone(pinBuzzer, NOTE_A4);
  //   for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(255, 0, 0));
       //낮을 때 할일
     }
@@ -552,7 +564,9 @@ void doWarn(){
   else {
 
     warnLED.fill(warnLED.Color(0 ,150, 0), 0, NUMPIXELS);
-    noTone(pinBuzzer);
+
+    ledcWrite(0,0);
+    //noTone(pinBuzzer);
   //  for (int i = 0; i < NUMPIXELS; i++)warnLED.setPixelColor(i, warnLED.Color(0, 150, 0));
     //정상 일 때 할일
   }

@@ -100,7 +100,10 @@ extern char subMenuItem[nSubMenu][12] ;
 static Button2 btnUp, btnMenu, btnDn ;
 
 extern WiFiManager wm;
+
 extern TFT_eSPI tft;
+extern TFT_eSprite img;
+
 extern float pressureValue;
 
 extern unsigned int timeout;
