@@ -11,7 +11,7 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include "pitches.h"
 #include <Adafruit_NeoPixel.h>
-
+#include <math.h>
 
 // ----------------------------------------
                         //
@@ -70,6 +70,8 @@ extern Mode_Type CUR_MODE ;
 #define RESET_BUTTON  26
 
 //----------------------------------------
+#define SWIDTH 240
+#define SHEIGHT 180
 // WiFiManager
 
 #ifdef ESP8266
@@ -102,7 +104,7 @@ static Button2 btnUp, btnMenu, btnDn ;
 extern WiFiManager wm;
 
 extern TFT_eSPI tft;
-extern TFT_eSprite img;
+extern TFT_eSprite spr;
 
 extern float pressureValue;
 
@@ -145,9 +147,14 @@ void DISPLAY_WARN_HIGH_MODE();
 void DISPLAY_WARN_LOW_MODE();
 
 
-float get_pressure();
+double get_pressure();
 void doWiFiManager();
 void configModeCallback(WiFiManager *myWiFiManager);
 void change_running_mode(float);
 void checkWarn();
 void doWarn();
+
+// double roundUpToPointOne(double);
+// double customCeil(double);
+
+// double roundUpToDecimal(double number) ;

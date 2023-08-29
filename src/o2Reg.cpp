@@ -22,7 +22,7 @@ int nSelectedSubMenu = 0;
 
 float pressureValue = 0.0;
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
-TFT_eSprite img = TFT_eSprite(&tft);  // Declare Sprite object "spr" with pointer to "tft" object
+TFT_eSprite spr = TFT_eSprite(&tft);  // Declare Sprite object "spr" with pointer to "tft" object
 
 typedef struct {
     double sensor;
@@ -82,8 +82,10 @@ void set_mode(Mode_Type _CUR_){
   Serial.printf("### CURRENT SET MODE from setmode(%s) \n", MODE_ITEM[CUR_MODE]);
   tft.fillScreen(TFT_BLACK);
   if(CUR_MODE == RUNNING_MODE){
-    //tft.fillScreen(TFT_BLACK);
-    img.fillScreen(TFT_BLACK);
+    spr.setTextSize(2.6);
+    spr.fillSprite(TFT_GREEN);
+    spr.setTextColor(TFT_WHITE, TFT_BLACK);
+    spr.setTextDatum(MC_DATUM);
   }
   else if(CUR_MODE == REBOOT_MODE){
 
@@ -370,16 +372,11 @@ void DISPLAY_BOOT_MODE(){
         tft.drawString("iO2",120, 160,4);
 }
 void DISPLAY_RUNNING_MODE(){
-        tft.setTextSize(2.5);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setTextDatum(MC_DATUM);
-       img.fillRect(0, 70, 240, 100 , TFT_BLACK);
-       tft.drawFloat(pressureValue,1 ,120, 120, 7);
-
-//        img.fillRect(0,80, 100, 240, TFT_BLACK);
-        // img.setTextDatum(MC_DATUM);
-        // img.drawString(String(pressureValue), 60, 60, 7);
-        // img.pushSprite(120,120);
+  spr.setTextColor(TFT_WHITE, TFT_BLACK);
+  // spr.drawString(String(pressureValue), 120,100,7);
+  spr.drawFloat(pressureValue,1, 120,100,7);
+  spr.pushSprite(0,0);
+  spr.fillSprite(TFT_BLACK);
   // tft.setTextColor(TFT_WHITE,TFT_BLACK);
 
   // tft.setCursor(0, 60, 7);
@@ -496,7 +493,7 @@ double calculateLinearInterpolation(double x1, double y1, double x2, double y2, 
     return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
 }
 
-float get_pressure() {
+double get_pressure() {
     int sensorValue;
     sensorValue = analogRead(pinSenor);
     float literValue = 0.0;
@@ -512,7 +509,7 @@ float get_pressure() {
         }
     }
 
-      return literValue;
+      return roundUpToDecimal(literValue);
 
 
 }
@@ -574,3 +571,18 @@ void doWarn(){
   warnLED.show();
 
 }
+
+// double roundUpToPointOne(double number) {
+//     double decimalPart = number - (int)number;
+//     double roundedDecimalPart = customCeil(decimalPart * 10.0) / 10.0;
+//     return (int)number + roundedDecimalPart;
+// }
+
+// double customCeil(double value) {
+//     int intValue = (int)value;
+//     return (value > intValue) ? (intValue + 1.0) : value;
+// }
+
+// double roundUpToDecimal(double number) {
+//     return ceil(number * 10.0) / 10.0;
+// }

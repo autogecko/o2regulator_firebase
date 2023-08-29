@@ -62,3 +62,13 @@ tft.drawString(" F", tft.drawNumber(val, 10, 20) + 10, 20);
   tft.drawString(str, x, y)
 
 #+end_src
+* SPI channel
+- SPI 종류별 핀맵
+    | NAME   | SPI2 | SPI3 |
+    | ----   | ---- | ---- |
+    | CS     |   15 |    5 |
+    | CLK    |   14 |   18 |
+    | MISO   |   12 |   19 |
+    | MOSI   |   13 |   23 |
+    | QUADWP |    2 |   23 |
+    | QUADHD |    4 |   21 |

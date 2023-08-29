@@ -84,7 +84,7 @@ void setup() {
   tft.init(TFT_BLACK);
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
-  img.createSprite(240, 240);
+  spr.createSprite(SWIDTH, SHEIGHT);
   tft.fillScreen(TFT_BLACK);
 
 //----------------------------------------
@@ -161,7 +161,7 @@ void loop() {
     }
     if(millis() - tNow_Sensing > tDelay_Sensing){
         tNow_Sensing = millis();
-        pressureValue = get_pressure();
+        pressureValue = roundUpToPointOne(get_pressure());
 //        if(pressureValue >= warnHighLevel || pressureValue <= warnLowLevel) set_mode(WARN_MODE);
 
         doWarn();
