@@ -29,25 +29,38 @@ typedef struct {
     double liter;
 } LinearMapping;
 
-LinearMapping linearMappings[] = {
-    {98, 0},
-    {100, 1},
-    {107, 2},
-    {113, 3},
-    {125, 4},
-    {139, 5},
-    {158, 6},
-    {181, 7},
-    {204, 8},
-    {238, 9},
-    {274, 10},
-    {326, 11},
-    {385, 12},
-    {454, 13},
-    {536, 14},
-    {600, 15}
-};
+// LinearMapping linearMappings[] = {
+//     {98, 0},
+//     {100, 1},
+//     {107, 2},
+//     {113, 3},
+//     {125, 4},
+//     {139, 5},
+//     {158, 6},
+//     {181, 7},
+//     {204, 8},
+//     {238, 9},
+//     {274, 10},
+//     {326, 11},
+//     {385, 12},
+//     {454, 13},
+//     {536, 14},
+//     {600, 15}
+// };
 
+LinearMapping linearMappings[] = {
+{380,0},
+    {430, 1},
+    {500, 2},
+    {660, 3},
+    {850, 4},
+    {960, 5},
+    {1090, 6},
+    {1210, 7},
+    {1350, 8},
+    {1470, 9},
+    {1640, 10},
+};
 Mode_Type CUR_MODE = BOOT_MODE;
 
 // ------------------------------------------------------------------
@@ -511,6 +524,7 @@ double get_pressure() {
 
       return roundUpToDecimal(literValue);
 
+     // return  0.1 + random(0, 12);
 
 }
 void doWiFiManager(){
@@ -583,6 +597,6 @@ void doWarn(){
 //     return (value > intValue) ? (intValue + 1.0) : value;
 // }
 
-// double roundUpToDecimal(double number) {
-//     return ceil(number * 10.0) / 10.0;
-// }
+double roundUpToDecimal(double number) {
+    return ceil(number * 10.0) / 10.0;
+}

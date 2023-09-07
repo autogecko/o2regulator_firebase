@@ -20,8 +20,8 @@
 #include <addons/RTDBHelper.h>
 
 /* 1. Define the WiFi credentials */
-#define WIFI_SSID "minux2G"
-#define WIFI_PASSWORD "0123456789han"
+#define WIFI_SSID "minux12"
+#define WIFI_PASSWORD "vivaminux"
 
 #define TRIGGER_PIN 26
 // For the following credentials, see examples/Authentications/SignInAsUser/EmailPassword/EmailPassword.ino
@@ -42,7 +42,7 @@ unsigned long count ;
 bool signupOK ;
 char * devicePath = "device/oxy01/o2_val";
 
-int tDelay_FireBase = 5000;
+int tDelay_FireBase = 2000;
 int tDelay_Sensing= 1000;
 int tNow_FireBase = 0;
 int tNow_Sensing = 0;
@@ -161,7 +161,7 @@ void loop() {
     }
     if(millis() - tNow_Sensing > tDelay_Sensing){
         tNow_Sensing = millis();
-        pressureValue = roundUpToPointOne(get_pressure());
+        pressureValue = roundUpToDecimal(get_pressure());
 //        if(pressureValue >= warnHighLevel || pressureValue <= warnLowLevel) set_mode(WARN_MODE);
 
         doWarn();
@@ -172,7 +172,7 @@ void loop() {
 }
 
 void publish_data(char *devicePath, float valPressure){
-
+/* publish firebase */
     if (Firebase.RTDB.setInt(&fbdo, devicePath, valPressure)){
         Serial.println("PASSED");
         Serial.println("PATH : " + fbdo.dataPath());

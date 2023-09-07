@@ -42,9 +42,9 @@
 #define pinBtnDn   32
 #define pinSenor   35
 #define pinWiFiSet 26
-#define pinSpeaker 13
+//#define pinSpeaker 13
 #define pinBuzzer   13 // ESP32 pin GPIO18 connected to piezo buzzer
-#define NEO_PIN    22      // 네오픽셀 DI핀과 연결된 핀번호 설정
+#define NEO_PIN    12      // 네오픽셀 DI핀과 연결된 핀번호 설정
 #define NUMPIXELS  24     // 네오픽셀 LED 갯수 설정
 //----------------------------------------
 enum Mode_Type {
@@ -157,4 +157,4 @@ void doWarn();
 // double roundUpToPointOne(double);
 // double customCeil(double);
 
-// double roundUpToDecimal(double number) ;
+ double roundUpToDecimal(double number) ;
